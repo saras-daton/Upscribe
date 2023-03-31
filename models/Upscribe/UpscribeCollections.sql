@@ -59,8 +59,8 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         select
         '{{brand}}' as brand,
         '{{store}}' as store,
-        body_html,		
-        created_at,		
+        body_html,	
+        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,		
         handle,		
         id,		
         image,
