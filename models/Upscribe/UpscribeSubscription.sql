@@ -56,6 +56,7 @@
         FROM (
             select 
             '{{brand}}' as Brand,
+            '{{store}}' as store,
             activated_on,
             active,
             cancellation_reason,

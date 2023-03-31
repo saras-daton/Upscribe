@@ -56,7 +56,8 @@
         SELECT * {{exclude()}} (row_num)
         FROM (
             select 
-            '{{brand}}' as Brand,
+            '{{brand}}' as brand,
+            '{{store}}' as store,
             activated_on,
             active,
             cancellation_reason,
