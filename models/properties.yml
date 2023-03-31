@@ -1,0 +1,85 @@
+version: 2
+models:
+  - name: UpscribeSubscriptionItems
+    description: This table provides Returns all the List of subscriptions associated with upscribe account and given domain based on the item.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['subscription_id', 'items_sku','id']
+        partition_by : { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': day }
+        granularity: 'day'
+        cluster_by : ['subscription_id']
+
+  - name: UpscribeSubscription
+    description: This table returns all the List of subscriptions associated with upscribe account and your given domain.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['subscription_id']
+        partition_by : { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': day }
+        granularity: 'day'
+        cluster_by : ['subscription_id']
+
+  - name: UpscribeCollections
+    description: This table returns all the List of collections information associated with upscribe account and your given domain.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id']
+        partition_by : {'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day'}
+        cluster_by : ['id']
+
+
+  - name: UpscribeCustomers
+    description: This table returns all the List of customer information and cards associated with upscribe account and your given domain.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id']
+        partition_by : {'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+        cluster_by : ['id']
+
+  - name: UpscribeOrders
+    description: This table returns all the List of order information associated with upscribe account and your given domain.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id','order_number','line_items_id']
+        partition_by : {'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day'}
+        cluster_by : ['id'] 
+    
+  - name: UpscribeOrdersTaxLines
+    description: This table returns all the List of order information associated with upscribe account along the tax lines.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id','order_number']
+        partition_by : {'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day'}
+        cluster_by : ['id'] 
+
+  - name: UpscribeProducts
+    description: This table returns all the List of product information associated with upscribe account and your given domain.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id']
+        partition_by : {'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day'}
+        cluster_by : ['id']
+
+  - name: UpscribeRefunds
+    description: This table returns all the List of refunds associated with upscribe account and your given domain.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id']
+        partition_by : {'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day'}
+        cluster_by : ['id']
+
+  - name: UpscribeSubscriptionQueues
+    description: This table returns all the List of subscriptions changelogs associated with upscribe account and your given domain
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id','shopify_order_id']
+        partition_by : {'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day'}
+        cluster_by : ['id']
