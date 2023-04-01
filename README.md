@@ -117,15 +117,15 @@ This package contains models from the Amazon Selling Partner API which includes 
 
 | **Category**                 | **Model**  | **Description** |
 | ------------------------- | ---------------| ----------------------- |
-|Inventory |[UpscribeCollections] [Ups](models/Upscribe/UpscribeCollections.sql)  | This table returns all the List of collections information associated with upscribe account and your given domain. |
-|Customer |[UpscribeCustomers] [Ups](models/Upscribe/UpscribeCustomers.sql)  | This table returns all the List of customer information and cards associated with upscribe account and your given domain. |
-|Order |[UpscribeOrders] [Ups](models/Upscribe/UpscribeOrders.sql)  | This table returns all the List of order information associated with upscribe account and your given domain. |
-|Order |[UpscribeOrdersTaxLines] [Ups](models/Upscribe/UpscribeOrdersTaxLines.sql)  | This table returns all the List of order information associated with upscribe account along the tax lines.|
-|Product |[UpscribeProducts] [Ups](models/Upscribe/UpscribeProducts.sql)  | This table returns all the List of product information associated with upscribe account and your given domain. |
-|Refund |[UpscribeRefunds] [Ups](models/Upscribe/UpscribeRefunds.sql)  | This table returns all the List of refunds associated with upscribe account and your given domain.|
-|Subscription |[UpscribeSubscription] [Ups](models/Upscribe/UpscribeSubscription.sql)  |This table returns all the List of subscriptions associated with upscribe account and your given domain. |
-|Subscription |[UpscribeSubscriptionItems] [Ups](models/Upscribe/UpscribeSubscriptionItems.sql)  |This table provides Returns all the List of subscriptions associated with upscribe account and given domain based on the item. |
-|Subscription |[UpscribeSubscriptionQueues] [Ups](models/Upscribe/UpscribeSubscriptionQueues.sql)  | This table returns all the List of subscriptions changelogs associated with upscribe account and your given domain |
+|Inventory |[UpscribeCollections] (models/Upscribe/UpscribeCollections.sql)  | This table returns all the List of collections information associated with upscribe account and your given domain. |
+|Customer |[UpscribeCustomers] (models/Upscribe/UpscribeCustomers.sql)  | This table returns all the List of customer information and cards associated with upscribe account and your given domain. |
+|Order |[UpscribeOrders] (models/Upscribe/UpscribeOrders.sql)  | This table returns all the List of order information associated with upscribe account and your given domain. |
+|Order |[UpscribeOrdersTaxLines] (models/Upscribe/UpscribeOrdersTaxLines.sql)  | This table returns all the List of order information associated with upscribe account along the tax lines.|
+|Product |[UpscribeProducts] (models/Upscribe/UpscribeProducts.sql)  | This table returns all the List of product information associated with upscribe account and your given domain. |
+|Refund |[UpscribeRefunds] (models/Upscribe/UpscribeRefunds.sql)  | This table returns all the List of refunds associated with upscribe account and your given domain.|
+|Subscription |[UpscribeSubscription] (models/Upscribe/UpscribeSubscription.sql)  |This table returns all the List of subscriptions associated with upscribe account and your given domain. |
+|Subscription |[UpscribeSubscriptionItems] (models/Upscribe/UpscribeSubscriptionItems.sql)  |This table provides Returns all the List of subscriptions associated with upscribe account and given domain based on the item. |
+|Subscription |[UpscribeSubscriptionQueues] (models/Upscribe/UpscribeSubscriptionQueues.sql)  | This table returns all the List of subscriptions changelogs associated with upscribe account and your given domain |
 
 
 ### For details about default configurations for Table Primary Key columns, Partition columns, Clustering columns, please refer the properties.yaml used for this package as below. 
