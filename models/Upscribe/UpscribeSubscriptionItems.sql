@@ -90,7 +90,7 @@
                 ITEMS.VALUE:subscription_price :: FLOAT as subscription_price	,		
                 ITEMS.VALUE:taxable :: BOOLEAN as taxable	,		
                 ITEMS.VALUE:title :: VARCHAR as	title ,		
-                ITEMS.VALUE:variant_id :: INT as variant_id	,		
+                ITEMS.VALUE:variant_id :: INT as items_variant_id	,		
                 ITEMS.VALUE:variant_title :: VARCHAR as variant_title	,		
                 ITEMS.VALUE:vendor :: VARCHAR as vendor	,
             {% else %}
