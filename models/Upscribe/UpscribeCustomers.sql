@@ -80,8 +80,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             default_address.VALUE:phone :: VARCHAR as default_address_phone,			
             default_address.VALUE:province :: VARCHAR as default_address_province,			
             default_address.VALUE:province_code :: VARCHAR as default_address_province_code,			
-            default_address.VALUE:zip :: VARCHAR as	default_address_zip,		
-            default_address.VALUE:first_name::VARCHAR as billing_address_first_name,
+            default_address.VALUE:zip :: VARCHAR as	default_address_zip,
         {% else %}
             default_address.address1 as default_address_address1,		
             default_address.address2 as default_address_address2,		
