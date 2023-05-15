@@ -26,18 +26,6 @@ Daton Integrations for
 - Upscribe
 - Exchange Rates(Optional, if currency conversion is not required)
 
-# Installation & Configuration
-
-## Installation Instructions
-
-If you haven't already, you will need to create a packages.yml file in your DBT project. Include this in your `packages.yml` file
-
-```yaml
-packages:
-  - package: saras-daton/upscribe
-    version: {{1.0.0}}
-```
-
 # Configuration 
 
 ## Required Variables
