@@ -130,9 +130,8 @@
             a.total_discount_inc_tax,
             a.total_line_items_price,
             a.total_price,
-            a.total_tax,
-            {% if target.type =='snowflake' %}	
-            {{extract_nested_value("TRACKING_CODES","checkoutAcceptsSMSMarketing","string")}} as tracking_codes_checkoutAcceptsSMSMarketing,
+            a.total_tax,	
+            {{extract_nested_value("TRACKING_CODES","checkoutAcceptsSMSMarketing","boolean")}} as tracking_codes_checkoutAcceptsSMSMarketing,
             {{extract_nested_value("TRACKING_CODES","clickRef","string")}} as tracking_codes_clickRef,
             {{extract_nested_value("TRACKING_CODES","partnerId","string")}} as tracking_codes_partnerId,
             {{extract_nested_value("TRACKING_CODES","refersion","string")}} as tracking_codes_refersion,
