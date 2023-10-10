@@ -92,9 +92,11 @@ vars:
   UpscribeSubscriptionItems : True
   UpscribeSubscription : True
   UpscribeCustomers : True
+  UpscribeCustomersAddresses : True
   UpscribeOrders : True
   UpscribeRefunds : True
   UpscribeProducts : True
+  UpscribeProductsImagesMetafields : True
   UpscribeSubscriptionQueues : True
   UpscribeCollections : True
 ```
@@ -107,9 +109,11 @@ This package contains models from the Amazon Selling Partner API which includes 
 | ------------------------- | ---------------| ----------------------- |
 |Inventory | [UpscribeCollections](models/Upscribe/UpscribeCollections.sql)  | This table returns all the List of collections information associated with upscribe account and your given domain. |
 |Customer | [UpscribeCustomers](models/Upscribe/UpscribeCustomers.sql)  | This table returns all the List of customer information and cards associated with upscribe account and your given domain. |
+|Customer | [UpscribeCustomersAddresses](models/Upscribe/UpscribeCustomersAddresses.sql)  | This table returns all the List of customer information and cards associated with upscribe account and your given domain along with the unnested Addresses column. |
 |Order | [UpscribeOrders](models/Upscribe/UpscribeOrders.sql)  | This table returns all the List of order information associated with upscribe account and your given domain. |
 |Order | [UpscribeOrdersTaxLines](models/Upscribe/UpscribeOrdersTaxLines.sql)  | This table returns all the List of order information associated with upscribe account along the tax lines. |
 |Product | [UpscribeProducts](models/Upscribe/UpscribeProducts.sql)  |This table returns all the List of product information associated with upscribe account and your given domain. |
+|Product | [UpscribeProductsImagesMetafields](models/Upscribe/UpscribeProductsImagesMetafields.sql)  |This table returns all the List of product information associated with upscribe account and your given domain along with the unnested images and metafields columns. |
 |Refund | [UpscribeRefunds](models/Upscribe/UpscribeRefunds.sql)  | This table returns all the List of refunds associated with upscribe account and your given domain. |
 |Subscription | [UpscribeSubscription](models/Upscribe/UpscribeSubscription.sql)  | This table returns all the List of subscriptions associated with upscribe account and your given domain.|
 |Subscription | [UpscribeSubscriptionItems](models/Upscribe/UpscribeSubscriptionItems.sql)  | This table returns all the List of subscriptions associated with upscribe account and your given domain.|
@@ -160,6 +164,15 @@ models:
         partition_by : {'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
         cluster_by : ['id']
 
+  - name: UpscribeCustomersAddresses
+    description: This table returns all the List of customer information and cards associated with upscribe account and your given domain along with unnested Address column.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id']
+        partition_by : {'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+        cluster_by : ['id']
+
   - name: UpscribeOrders
     description: This table returns all the List of order information associated with upscribe account and your given domain.
     config:
@@ -186,6 +199,16 @@ models:
         unique_key : ['id']
         partition_by : {'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day'}
         cluster_by : ['id']
+
+  - name: UpscribeProductsImagesMetafields
+    description: This table returns all the List of product information associated with upscribe account and your given domain along with unnested images and metafields columns.
+    config:
+        materialized : incremental
+        incremental_strategy : merge
+        unique_key : ['id']
+        partition_by : {'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day'}
+        cluster_by : ['id']
+        
 
   - name: UpscribeRefunds
     description: This table returns all the List of refunds associated with upscribe account and your given domain.

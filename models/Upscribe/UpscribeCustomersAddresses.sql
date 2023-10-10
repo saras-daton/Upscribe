@@ -1,5 +1,5 @@
 
-{% if var('UpscribeCollections') %}
+{% if var('UpscribeCustomers') %}
     {{ config( enabled = True ) }}
 {% else %}
     {{ config( enabled = False ) }}
@@ -21,7 +21,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%upscribe%collections')}}    
+{{set_table_name('%upscribe%customers')}}    
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -58,30 +58,53 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         select
         '{{brand}}' as brand,
         '{{store}}' as store,
-        body_html,	
-        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,		
-        handle,		
-        id,		
-        image,
-        sort_order,		
+        accepts_marketing,
+        --active_subscription_count,	
+        --default_address,
+        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
+        {{extract_nested_value("addresses","address1","string")}} as addresses_address1,
+        {{extract_nested_value("addresses","address2","string")}} as addresses_address2, 
+        {{extract_nested_value("addresses","city","string")}} as addresses_city, 
+        {{extract_nested_value("addresses","company","string")}} as addresses_company,
+        {{extract_nested_value("addresses","country","string")}} as addresses_country,	
+        {{extract_nested_value("addresses","country_code","string")}} as addresses_country_code,	
+        {{extract_nested_value("addresses","country_name","string")}} as addresses_country_name,						
+        {{extract_nested_value("addresses","customer_id","NUMERIC")}} as addresses_customer_id,			
+    	{{extract_nested_value("addresses","default","boolean")}} as addresses_default,		
+    	{{extract_nested_value("addresses","first_name","string")}} as addresses_first_name,		
+        {{extract_nested_value("addresses","last_name","string")}} as addresses_last_name,		
+        {{extract_nested_value("addresses","id","NUMERIC")}} as addresses_id,
+        {{extract_nested_value("addresses","name","string")}} as addresses_name,		
+		{{extract_nested_value("addresses","phone","string")}} as addresses_phone,	
+        {{extract_nested_value("addresses","province","string")}} as addresses_province,		
+	    {{extract_nested_value("addresses","province_code","string")}} as addresses_province_code,		
+        {{extract_nested_value("addresses","zip","string")}} as addresses_zip,
+	    email,		
+        a.first_name,		
+       coalesce(a.id,0)  	as id,	
+        --inactive_subscription_count,		
+        language,		
+        a.last_name,		
+        a.phone,		
+        state,		
         cast(store_id as string) as store_id,		
-        title,			
-        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        updated_at,	
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-       
-        from {{i}} a
-            
+        
+        from {{i}} a  
+            {{unnesting("addresses")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
             --WHERE 1=1
             {% endif %}
             qualify
-            DENSE_RANK() OVER (PARTITION BY id,store_id order by {{daton_batch_runtime()}} desc) =1
-       
+            DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) =1
+        
+ 
     {% if not loop.last %} union all {% endif %}
     {% endfor %}

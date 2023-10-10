@@ -54,68 +54,47 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             {% set hr = 0 %}
         {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    From (
+    
         select
         '{{brand}}' as brand,
         '{{store}}' as store,
         accepts_marketing,
         active_subscription_count,	
-        addresses,
+        --addresses,
         CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-        {% if target.type=='snowflake' %}
-            default_address.VALUE:address1 :: VARCHAR as default_address_address1,			
-            default_address.VALUE:address2 :: VARCHAR as default_address_address2,			
-            default_address.VALUE:city :: VARCHAR as default_address_city,			
-            default_address.VALUE:company :: VARCHAR as default_address_company,			
-            default_address.VALUE:country :: VARCHAR as default_address_country,			
-            default_address.VALUE:country_code :: VARCHAR as default_address_country_code,			
-            default_address.VALUE:country_name :: VARCHAR as default_address_country_name,			
-            default_address.VALUE:customer_id :: NUMERIC as	default_address_customer_id,		
-            default_address.VALUE:default :: VARCHAR as	default_address_default,		
-            default_address.VALUE:first_name :: VARCHAR as default_address_first_name,			
-            default_address.VALUE:id :: NUMERIC as default_address_id,	 		
-            default_address.VALUE:last_name :: VARCHAR as default_address_last_name,			
-            default_address.VALUE:name :: VARCHAR as default_address_name,			
-            default_address.VALUE:phone :: VARCHAR as default_address_phone,			
-            default_address.VALUE:province :: VARCHAR as default_address_province,			
-            default_address.VALUE:province_code :: VARCHAR as default_address_province_code,			
-            default_address.VALUE:zip :: VARCHAR as	default_address_zip,
-        {% else %}
-            default_address.address1 as default_address_address1,		
-            default_address.address2 as default_address_address2,		
-            default_address.city as default_address_city,		
-            default_address.company as default_address_company,		
-            default_address.country as default_address_country,		
-            default_address.country_code as default_address_country_code,		
-            default_address.country_name as default_address_country_name,		
-            default_address.customer_id as default_address_customer_id,		
-            default_address.default as default_address_default,		
-            default_address.first_name as default_address_first_name,		
-            default_address.id as default_address_id,		
-            default_address.last_name as default_address_last_name,		
-            default_address.name as default_address_name,		
-            default_address.phone as default_address_phone,		
-            default_address.province as default_address_province,		
-            default_address.province_code as default_address_province_code,		
-            default_address.zip as default_address_zip,
-        {% endif %}	
+        {{extract_nested_value("default_address","address1","string")}} as default_address_address1,
+        {{extract_nested_value("default_address","address2","string")}} as default_address_address2, 
+        {{extract_nested_value("default_address","city","string")}} as default_address_city, 
+        {{extract_nested_value("default_address","company","string")}} as default_address_company,
+        {{extract_nested_value("default_address","country","string")}} as default_address_country,	
+        {{extract_nested_value("default_address","country_code","string")}} as default_address_country_code,	
+        {{extract_nested_value("default_address","country_name","string")}} as default_address_country_name,						
+        {{extract_nested_value("default_address","customer_id","NUMERIC")}} as default_address_customer_id,			
+    	{{extract_nested_value("default_address","default","string")}} as default_address_default,		
+    	{{extract_nested_value("default_address","first_name","string")}} as default_address_first_name,		
+        {{extract_nested_value("default_address","last_name","string")}} as default_address_last_name,		
+        {{extract_nested_value("default_address","id","NUMERIC")}} as default_address_id,
+        {{extract_nested_value("default_address","name","string")}} as default_address_name,		
+		{{extract_nested_value("default_address","phone","string")}} as default_address_phone,	
+        {{extract_nested_value("default_address","province","string")}} as default_address_province,		
+	    {{extract_nested_value("default_address","province_code","string")}} as default_address_province_code,		
+        {{extract_nested_value("default_address","zip","string")}} as default_address_zip,
 	    email,		
         a.first_name,		
-        a.id,		
+        coalesce(a.id,0)as id,		
         inactive_subscription_count,		
         language,		
         a.last_name,		
         a.phone,		
         state,		
-        store_id,		
+        cast(store_id as string) as store_id,		
         updated_at,	
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
+        
         from {{i}} a  
             {{unnesting("default_address")}}
             {% if is_incremental() %}
@@ -123,7 +102,8 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
             --WHERE 1=1
             {% endif %}
-        )
-    where row_num =1 
+            qualify
+            DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) =1
+        
     {% if not loop.last %} union all {% endif %}
     {% endfor %}

@@ -11,9 +11,9 @@ profile: 'edm_data_transformation'
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
-  raw_database: "Upscribe" #equivalent to project_id in BigQuery
+  raw_database: "edm-saras" #equivalent to project_id in BigQuery
     # Example Database name
-  raw_schema: "Daton" #equivalent to dataset in BigQuery
+  raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
     # Example Schema name
 
   currency_conversion_flag: True
@@ -22,6 +22,8 @@ vars:
   # Example- default_brandname: "Nike"
   default_brandname: "" 
   get_storename_from_tablename_flag: True 
+
+  
   storename_position_in_tablename: 1
   # Example- default_storename: "US"
   default_storename: "" 

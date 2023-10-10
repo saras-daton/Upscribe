@@ -58,20 +58,19 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             {% set hr = 0 %}
         {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    From (
+   
         select
         '{{brand}}' as brand,
         '{{store}}' as store,
         amount	,
         CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at	,		
         currency	,		
-        id	,		
-        payment_charge_id	,		
+        coalesce(id	,'NA') as id,		
+        cast(payment_charge_id	as string) as payment_charge_id,		
         reason	,		
-        shopify_order_id	,		
+        cast(shopify_order_id as string) as shopify_order_id	,		
         status	,		
-        store_id	,		
+        cast(store_id as string)	as store_id,		
         type	,			
         CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         {% if var('currency_conversion_flag') %}
@@ -86,7 +85,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY id order by a.{{daton_batch_runtime()}} desc) row_num
+        
         from {{i}} a
             {% if var('currency_conversion_flag') %}
                 left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
@@ -96,7 +95,9 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             --WHERE 1=1
             {% endif %}
-        )
-    where row_num =1 
+            qualify
+            DENSE_RANK() OVER (PARTITION BY id order by a.{{daton_batch_runtime()}} desc) =1
+        
+   
     {% if not loop.last %} union all {% endif %}
     {% endfor %}

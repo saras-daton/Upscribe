@@ -2,3 +2,6 @@ dbt_packages/
 logs/
 target/
 profiles/
+keyfile.json
+
+

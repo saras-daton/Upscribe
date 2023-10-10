@@ -53,12 +53,39 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             {% set hr = 0 %}
         {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    From (
+   
         select
         '{{brand}}' as brand,
-        '{{store}}' as store,
-        billing_address,	
+        '{{store}}' as store,	
+        {{extract_nested_value("billing_address","address1","string")}} as billing_address_address1,
+
+        {{extract_nested_value("billing_address","address2","string")}} as billing_address_address2,
+
+        {{extract_nested_value("billing_address","city","string")}} as billing_address_city,
+
+        {{extract_nested_value("billing_address","company","string")}} as billing_address_company,
+
+        {{extract_nested_value("billing_address","country_code","string")}} as billing_address_country_code,
+
+        {{extract_nested_value("billing_address","first_name","string")}} as billing_address_first_name,
+
+        {{extract_nested_value("billing_address","last_name","string")}} as billing_address_last_name,
+
+        {{extract_nested_value("billing_address","latitude","string")}} as billing_address_latitude,
+
+        {{extract_nested_value("billing_address","longitude","string")}} as billing_address_longitude,
+
+        {{extract_nested_value("billing_address","name","string")}} as billing_address_name,
+
+        {{extract_nested_value("billing_address","phone","string")}} as billing_address_phone,
+
+        {{extract_nested_value("billing_address","province","string")}} as billing_address_province,
+
+        {{extract_nested_value("billing_address","province_code","string")}} as billing_address_province_code,
+
+        {{extract_nested_value("billing_address","zip","string")}} as billing_address_zip,
+
+ 
         charge_error,		
         charge_errors,		
         coupon_discount,		
@@ -71,55 +98,62 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         errored_count,		
         a.id,		
         is_addressing_upcoming_notification,	
-        {% if target.type=='snowflake' %}
-            items.VALUE:compare_at_price :: VARCHAR as items_compare_at_price,		
-            items.VALUE:fulfillment_service	:: VARCHAR as items_fulfillment_service ,		
-            items.VALUE:gift_card :: VARCHAR as items_gift_card,		
-            items.VALUE:grams :: VARCHAR as items_grams,		
-            items.VALUE:id :: VARCHAR as items_id,		
-            items.VALUE:image_url :: VARCHAR as items_image_url,		
-            items.VALUE:in_stock :: VARCHAR as items_in_stock,		
-            items.VALUE:key :: VARCHAR as items_key,		
-            items.VALUE:line_price :: VARCHAR as items_line_price,		
-            items.VALUE:original_line_price :: VARCHAR as items_original_line_price,		
-            items.VALUE:original_price :: VARCHAR as items_original_price,		
-            items.VALUE:price :: VARCHAR as items_price,		
-            items.VALUE:product_id :: VARCHAR as items_product_id,	
-            items.VALUE:properties as items_properties,	
-            items.VALUE:quantity :: VARCHAR as items_quantity,		
-            items.VALUE:requires_shipping :: VARCHAR as items_requires_shipping,		
-            items.VALUE:sku :: VARCHAR as items_sku,		
-            items.VALUE:subscription_price :: VARCHAR as items_subscription_price,		
-            items.VALUE:taxable :: VARCHAR as items_taxable,		
-            items.VALUE:title :: VARCHAR as items_title,		
-            items.VALUE:variant_id :: VARCHAR as items_variant_id,		
-            items.VALUE:variant_title :: VARCHAR as items_variant_title,		
-            items.VALUE:vendor :: VARCHAR as items_vendor,		
-        {% else %}    	
-            items.compare_at_price as items_compare_at_price,		
-            items.fulfillment_service as items_fulfillment_service,		
-            items.gift_card as items_gift_card,		
-            items.grams as items_grams,		
-            items.id as items_id,		
-            items.image_url as items_image_url,		
-            items.in_stock as items_in_stock,		
-            items.key as items_key,		
-            items.line_price as items_line_price,		
-            items.original_line_price as items_original_line_price,		
-            items.original_price as items_original_price,		
-            items.price as items_price,		
-            items.product_id as items_product_id,
-            items.properties as items_properties,			
-            items.quantity as items_quantity,		
-            items.requires_shipping as items_requires_shipping,		
-            items.sku as items_sku,		
-            items.subscription_price as items_subscription_price,		
-            items.taxable as items_taxable,		
-            items.title as items_title,		
-            items.variant_id as items_variant_id,		
-            items.variant_title as items_variant_title,		
-            items.vendor as items_vendor,		
-        {% endif %}
+        {{extract_nested_value("items","compare_at_price","boolean")}} as items_compare_at_price,
+
+        {{extract_nested_value("items","fulfillment_service","string")}} as items_fulfillment_service,
+
+        {{extract_nested_value("items","gift_card","boolean")}} as items_gift_card,
+
+        {{extract_nested_value("items","grams","numeric")}} as items_grams,
+
+        {{extract_nested_value("items","id","string")}} as items_id,    
+
+        {{extract_nested_value("items","image_url","string")}} as items_image_url,  
+
+        {{extract_nested_value("items","in_stock","boolean")}} as items_in_stock,  
+
+        {{extract_nested_value("items","key","string")}} as items_key,  
+
+        {{extract_nested_value("items","line_price","numeric")}} as items_line_price,  
+
+        {{extract_nested_value("items","original_line_price","numeric")}} as items_original_line_price,
+
+        {{extract_nested_value("items","original_price","numeric")}} as items_original_price,
+
+        {{extract_nested_value("items","price","numeric")}} as items_price,
+
+        {{extract_nested_value("items","product_id","numeric")}} as items_product_id,          
+
+        {{extract_nested_value("items","quantity","numeric")}} as items_quantity,
+
+        {{extract_nested_value("items","requires_shipping","boolean")}} as items_requires_shipping,
+
+        {{extract_nested_value("items","sku","string")}} as items_sku,  
+
+        {{extract_nested_value("items","subscription_price","numeric")}} as items_subscription_price,          
+
+        {{extract_nested_value("items","taxable","boolean")}} as items_taxable,
+
+        {{extract_nested_value("items","title","string")}} as items_title,  
+
+        {{extract_nested_value("items","variant_id","numeric")}} as items_variant_id,
+
+        {{extract_nested_value("items","variant_title","string")}} as items_variant_title,
+
+        {{extract_nested_value("items","vendor","string")}} as items_vendor,
+
+        {{extract_nested_value("properties","Charge__Limit","string")}} as items_properties_Charge__Limit,
+
+        {{extract_nested_value("properties","Discount__Amount","string")}} as items_properties_Discount__Amount,
+
+        {{extract_nested_value("properties","Interval__Frequency","string")}} as items_properties_Interval__Frequency,
+
+        {{extract_nested_value("properties","Interval__Unit","string")}} as items_properties_Interval__Unit,
+
+        {{extract_nested_value("properties","Subscription","string")}} as items_properties_Subscription,
+
+        {{extract_nested_value("properties","Subscription__Product__Title","string")}} as items_properties_Subscription__Product__Title,
+       
         origin_subtotal_price,		
         original_total_line_items_price,		
         original_total_price,		
@@ -129,9 +163,42 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         processed,		
         processing,		
         quantity_discount,		
-        shipping_address,	
+        
+        {{extract_nested_value("shipping_address","address1","string")}} as shipping_address_address1,
+
+        {{extract_nested_value("shipping_address","address2","string")}} as shipping_address_address2,
+
+        {{extract_nested_value("shipping_address","city","string")}} as shipping_address_city,
+
+        {{extract_nested_value("shipping_address","company","string")}} as shipping_address_company,
+
+        {{extract_nested_value("shipping_address","country_code","string")}} as shipping_address_country_code,
+
+        {{extract_nested_value("shipping_address","first_name","string")}} as shipping_address_first_name,
+
+        {{extract_nested_value("shipping_address","last_name","string")}} as shipping_address_last_name,
+
+        {{extract_nested_value("shipping_address","latitude","string")}} as shipping_address_latitude,
+
+        {{extract_nested_value("shipping_address","longitude","string")}} as shipping_address_longitude,
+
+        {{extract_nested_value("shipping_address","name","string")}} as shipping_address_name,
+
+        {{extract_nested_value("shipping_address","phone","string")}} as shipping_address_phone,
+
+        {{extract_nested_value("shipping_address","province","string")}} as shipping_address_province,
+
+        {{extract_nested_value("shipping_address","province_code","string")}} as shipping_address_province_code,
+
+        {{extract_nested_value("shipping_address","zip","string")}} as shipping_address_zip,
+
+ 
         shipping_discount,		
-        shipping_lines,		
+        
+        {{extract_nested_value("shipping_lines","handle","string")}} as shipping_lines_handle,
+        {{extract_nested_value("shipping_lines","price","string")}} as shipping_lines_price,
+        {{extract_nested_value("shipping_lines","title","string")}} as shipping_lines_title,
+
         shopify_customer_email,		
         shopify_customer_id,		
         shopify_order_id,		
@@ -153,15 +220,20 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        ROW_NUMBER() OVER (PARTITION BY a.id,shopify_order_id order by a.{{daton_batch_runtime()}} desc) row_num
+        
         from {{i}} a  
             {{unnesting("items")}}
+            {{multi_unnesting("items","properties")}}
+            {{unnesting("billing_address")}}
+            {{unnesting("shipping_address")}}
+            {{unnesting("shipping_lines")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             --WHERE 1=1
             {% endif %}
-        )
-    where row_num =1 
+            qualify
+            ROW_NUMBER() OVER (PARTITION BY a.id,shopify_order_id order by a.{{daton_batch_runtime()}} desc) =1
+       
     {% if not loop.last %} union all {% endif %}
     {% endfor %}

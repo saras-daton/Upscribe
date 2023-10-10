@@ -57,133 +57,191 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             {% set hr = 0 %}
         {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    From (
+   
         select
         '{{brand}}' as brand,
         '{{store}}' as store,
-        analytics,		
-        billing_address,		
+        analytics,			
+        {{extract_nested_value("billing_address","address1","string")}} as billing_address_address1,
+
+        {{extract_nested_value("billing_address","address2","string")}} as billing_address_address2,
+
+        {{extract_nested_value("billing_address","city","string")}} as billing_address_city,
+
+        {{extract_nested_value("billing_address","company","string")}} as billing_address_company,
+
+        {{extract_nested_value("billing_address","country_code","string")}} as billing_address_country_code,
+
+        {{extract_nested_value("billing_address","first_name","string")}} as billing_address_first_name,
+
+        {{extract_nested_value("billing_address","last_name","string")}} as billing_address_last_name,
+
+        {{extract_nested_value("billing_address","latitude","string")}} as billing_address_latitude,
+
+        {{extract_nested_value("billing_address","longitude","string")}} as billing_address_longitude,
+
+        {{extract_nested_value("billing_address","name","string")}} as billing_address_name,
+
+        {{extract_nested_value("billing_address","phone","string")}} as billing_address_phone,
+
+        {{extract_nested_value("billing_address","province","string")}} as billing_address_province,
+
+        {{extract_nested_value("billing_address","province_code","string")}} as billing_address_province_code,
+
+        {{extract_nested_value("billing_address","zip","string")}} as billing_address_zip,
+
+
         cancel_reason,		
         cancelled_at,		
         contact_email,		
-        create_subscription,		
-        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,		
+        create_subscription,	
         customer,	
-        {% if target.type=='snowflake' %}
-            discount_applications.VALUE:allocation_method :: VARCHAR as discount_applications_allocation_method,	
-            discount_applications.VALUE:code :: VARCHAR as discount_applications_code,		
-            discount_applications.VALUE:target_selection :: VARCHAR as discount_applications_target_selection,	
-            discount_applications.VALUE:target_type	:: VARCHAR as discount_applications_target_type,		
-            discount_applications.VALUE:type :: VARCHAR as discount_applications_type,		
-            discount_applications.VALUE:value :: VARCHAR as discount_applications_value,		
-            discount_applications.VALUE:value_type :: VARCHAR as discount_applications_value_type,		
-            discount_codes.VALUE:amount :: VARCHAR discount_codes_amount, 
-            discount_codes.VALUE:code :: VARCHAR discount_codes_code, 
-            discount_codes.VALUE:type :: VARCHAR discount_codes_type, 
-        {% else %}
-            discount_applications.allocation_method as discount_applications_allocation_method,		
-            discount_applications.code	as discount_applications_code,		
-            discount_applications.target_selection as discount_applications_target_selection,		
-            discount_applications.target_type as discount_applications_target_type,		
-            discount_applications.type as discount_applications_type,		
-            discount_applications.value	as discount_applications_value,		
-            discount_applications.value_type as discount_applications_value_type,		
-            discount_codes.amount as discount_codes_amount,		
-            discount_codes.code as discount_codes_code,		
-            discount_codes.type	as discount_codes_type,	
-        {% endif %}    	
-        email,		
+        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,		
+        {{extract_nested_value(" discount_applications","allocation_method","string")}} as discount_applications_allocation_method,
+        {{extract_nested_value(" discount_applications","code","string")}} as discount_applications_code,
+        {{extract_nested_value(" discount_applications","target_selection","string")}} as discount_applications_target_selection,
+        {{extract_nested_value(" discount_applications","target_type","string")}} as discount_applications_target_type,
+        {{extract_nested_value(" discount_applications","type","string")}} as discount_applications_type,
+        {{extract_nested_value(" discount_applications","value","string")}} as discount_applications_value,
+        {{extract_nested_value(" discount_applications","value_type","string")}} as discount_applications_value_type,
+        {{extract_nested_value(" discount_codes","amount","string")}} as discount_codes_amount,
+        {{extract_nested_value(" discount_codes","code","string")}} as discount_codes_code,
+        {{extract_nested_value(" discount_codes","type","string")}} as discount_codes_type,
+        a.email,		
         financial_status,		
         a.fulfillment_status,
-        fulfillments,
+        --fulfillments,
         guest_checkout,		
-        a.id , 	
-        {% if target.type=='snowflake' %}
-        line_items.VALUE:admin_graphql_api_id as line_items_admin_graphql_api_id,		
-        line_items.VALUE:discount_allocations as discount_allocations,	
-        line_items.VALUE:fulfillable_quantity :: NUMERIC as line_items_fulfillable_quantity,
-        line_items.VALUE:fulfillment_service as line_items_fulfillment_service,		
-        line_items.VALUE:fulfillment_status as line_items_fulfillment_status,		
-        line_items.VALUE:gift_card :: BOOLEAN  as line_items_gift_card,	
-        line_items.VALUE:grams :: NUMERIC as line_items_grams,	
-        line_items.VALUE:id	:: NUMERIC as line_items_id,	
-        line_items.VALUE:name as line_items_name,		
-        line_items.VALUE:pre_tax_price as line_items_pre_tax_price,		
-        line_items.VALUE:pre_tax_price_set as line_items_pre_tax_price_set,	
-        line_items.VALUE:price as line_items_price,		
-        line_items.VALUE:price_set as line_items_price_set,	
-        line_items.VALUE:product_exists :: BOOLEAN as line_items_product_exists,	
-        line_items.VALUE:product_id :: NUMERIC as line_items_product_id,
-        line_items.VALUE:properties as line_items_properties,	
-        line_items.VALUE:quantity :: NUMERIC as line_items_quantity,	
-        line_items.VALUE:requires_shipping :: BOOLEAN as line_items_requires_shipping ,	
-        line_items.VALUE:sku as line_items_sku ,		
-        line_items.VALUE:tax_lines as line_items_tax_lines,	
-        line_items.VALUE:taxable :: BOOLEAN as line_items_taxable,	
-        line_items.VALUE:title as line_items_title,		
-        line_items.VALUE:total_discount	as line_items_total_discount,		
-        line_items.VALUE:total_discount_set	as line_items_total_discount_set, 
-        line_items.VALUE:variant_id :: NUMERIC as line_items_variant_id,	
-        line_items.VALUE:variant_inventory_management as line_items_variant_inventory_management,		
-        line_items.VALUE:variant_title as line_items_variant_title,		
-        line_items.VALUE:vendor as line_items_vendor,
-        {% else %}
-        line_items.admin_graphql_api_id	as line_items_admin_grapgql_api_id,		
-        line_items.discount_allocations	 as line_items_discount_allocations,		
-        line_items.fulfillable_quantity as line_items_fulfillable_quantity,		
-        line_items.fulfillment_service as line_items_fulfillment_service,		
-        line_items.fulfillment_status as line_items_fulfillment_status,		
-        line_items.gift_card as line_items_gift_card,		
-        line_items.grams as line_items_grams,		
-        line_items.id as line_items_id,		
-        line_items.name as line_items_name,		
-        line_items.pre_tax_price as line_items_pre_tax_price,		
-        line_items.pre_tax_price_set as line_items_pre_tax_price_set,		
-        line_items.price as line_items_price,		
-        line_items.price_set as line_items_price_set,		
-        line_items.product_exists as line_items_product_exists,		
-        line_items.product_id as line_items_product_id,		
-        line_items.properties as line_items_properties,		
-        line_items.quantity	as line_items_quantity,		
-        line_items.requires_shipping as line_items_requires_shipping,		
-        line_items.sku as line_items_sku,		
-        line_items.tax_lines as line_items_tax_lines,		
-        line_items.taxable as line_items_taxable,		
-        line_items.title as line_items_title,		
-        line_items.total_discount as line_items_total_discount,		
-        line_items.total_discount_set as line_items_total_discount_set,		
-        line_items.variant_id as line_items_variant_id,		
-        line_items.variant_inventory_management as line_items_variant_inventory_management,		
-        line_items.variant_title as line_items_variant_title,		
-        line_items.vendor as line_items_vendor,
-        {% endif %}			
+        coalesce(a.id,0) as id , 	
+       
+        {{extract_nested_value(" line_items","admin_graphql_api_id","string")}} as line_items_admin_graphql_api_id,
+        {{extract_nested_value(" line_items","fulfillable_quantity","NUMERIC")}} as line_items_fulfillable_quantity,
+       	
+       	
+        --line_items.VALUE:discount_allocations as discount_allocations,	
+        {{extract_nested_value(" line_items","fulfillment_service","string")}} as line_items_fulfillment_service,
+       	
+       	{{extract_nested_value(" line_items","fulfillment_status","string")}} as line_items_fulfillment_status,
+        {{extract_nested_value(" line_items","gift_card","boolean")}} as line_items_gift_card,
+        {{extract_nested_value(" line_items","grams","numeric")}} as line_items_grams,
+        {{extract_nested_value(" line_items","id","numeric")}} as line_items_id,
+        {{extract_nested_value(" line_items","name","string")}} as line_items_name,
+        {{extract_nested_value(" line_items","pre_tax_price","string")}} as line_items_pre_tax_price,
+        {{extract_nested_value(" line_items","price","string")}} as line_items_price,
+        {{extract_nested_value(" line_items","product_exists","boolean")}} as line_items_product_exists,
+        {{extract_nested_value(" line_items","product_id","numeric")}} as line_items_product_id,
+
+   		
+        --line_items.VALUE:pre_tax_price_set as line_items_pre_tax_price_set,	
+        		
+        --line_items.VALUE:price_set as line_items_price_set,	
+      
+       -- line_items.VALUE:properties as line_items_properties,	
+        {{extract_nested_value(" line_items","quantity","numeric")}} as line_items_quantity,
+        {{extract_nested_value(" line_items","requires_shipping","boolean")}} as line_items_requires_shipping,
+        {{extract_nested_value(" line_items","sku","string")}} as line_items_sku,
+
+		
+       -- line_items.VALUE:tax_lines as line_items_tax_lines,	
+       {{extract_nested_value(" line_items","taxable","boolean")}} as line_items_taxable,
+       {{extract_nested_value(" line_items","title","string")}} as line_items_title,
+       {{extract_nested_value(" line_items","total_discount","string")}} as line_items_total_discount,
+        --line_items.VALUE:total_discount_set	as line_items_total_discount_set, 
+        {{extract_nested_value(" line_items","variant_id","numeric")}} as line_items_variant_id,
+        {{extract_nested_value(" line_items","variant_inventory_management","string")}} as line_items_variant_inventory_management,
+        {{extract_nested_value(" line_items","variant_title","string")}} as line_items_variant_title,
+        {{extract_nested_value(" line_items","vendor","string")}} as line_items_vendor,
+    		
         a.name,		
         a.note,		
         a.number,		
-        order_number,		
-        payment_charge_id,		
-        payment_customer_id,		
-        payment_method_id,		
+        coalesce(order_number,0) as order_number,		
+        cast(payment_charge_id as string) as payment_charge_id,		
+        cast(payment_customer_id as string) as payment_customer_id ,		
+        cast(payment_method_id as string) as payment_method_id,		
         payment_type,		
         a.phone,		
         presentment_currency,		
-        processed_at,		
-        refunds,		
-        shipping_address,		
-        shipping_lines,		
-        shopify_customer_id,		
-        store_id,		
+        a.processed_at,		
+        refunds,
+        {{extract_nested_value("refunds","admin_graphql_api_id","string")}} as refunds_admin_graphql_api_id,
+        {{extract_nested_value("refunds","created_at","TIMESTAMP")}} as refunds_created_at,
+        {{extract_nested_value("refunds","id","NUMERIC")}} as refunds_id,
+        {{extract_nested_value("refunds","note","string")}} as refunds_note,
+        {{extract_nested_value("refunds","order_id","NUMERIC")}} as refunds_order_id,
+        {{extract_nested_value("refunds","processed_at","TIMESTAMP")}} as refunds_processed_at,
+        {{extract_nested_value("refunds","restock","boolean")}} as refunds_restock,
+        {{extract_nested_value("refunds","user_id","boolean")}} as refunds_user_id,
+    
+        {{extract_nested_value("shipping_address","address1","string")}} as shipping_address_address1,
+
+        {{extract_nested_value("shipping_address","address2","string")}} as shipping_address_address2,
+
+        {{extract_nested_value("shipping_address","city","string")}} as shipping_address_city,
+
+        {{extract_nested_value("shipping_address","company","string")}} as shipping_address_company,
+
+        {{extract_nested_value("shipping_address","country_code","string")}} as shipping_address_country_code,
+
+        {{extract_nested_value("shipping_address","first_name","string")}} as shipping_address_first_name,
+
+        {{extract_nested_value("shipping_address","last_name","string")}} as shipping_address_last_name,
+
+        {{extract_nested_value("shipping_address","latitude","string")}} as shipping_address_latitude,
+
+        {{extract_nested_value("shipping_address","longitude","string")}} as shipping_address_longitude,
+
+        {{extract_nested_value("shipping_address","name","string")}} as shipping_address_name,
+
+        {{extract_nested_value("shipping_address","phone","string")}} as shipping_address_phone,
+
+        {{extract_nested_value("shipping_address","province","string")}} as shipping_address_province,
+
+        {{extract_nested_value("shipping_address","province_code","string")}} as shipping_address_province_code,
+
+        {{extract_nested_value("shipping_address","zip","string")}} as shipping_address_zip,
+	
+        --shipping_lines,		
+        cast(shopify_customer_id as string) as shopify_customer_id,		
+        cast(store_id as string) as store_id,		
         subtotal_price,		
         a.tags,		
-        a.tax_lines,		
+       -- a.tax_lines,		
         a.token,		
         a.total_discounts,		
         total_line_items_price,		
-        a.total_price,		
-        total_shipping_price_set,
+        a.total_price,	
+        {{extract_nested_value("presentment_money","amount","string")}} as total_shipping_price_set_presentment_money_amount,
+        {{extract_nested_value("presentment_money","currency_code","string")}} as total_shipping_price_set_presentment_money_currency_code,
+        {{extract_nested_value("shop_money","amount","string")}} as total_shipping_price_set_shop_money_amount,
+        {{extract_nested_value("shop_money","currency_code","string")}} as total_shipping_price_set_shop_money_currency_code,	
         total_tax,	
-        tracking_codes,
+        --tracking_codes,
+        {{extract_nested_value("TRACKING_CODES","checkoutAcceptsSMSMarketing","boolean")}} as tracking_codes_checkoutAcceptsSMSMarketing,
+        {{extract_nested_value("TRACKING_CODES","clickRef","string")}} as tracking_codes_clickRef,
+        {{extract_nested_value("TRACKING_CODES","partnerId","string")}} as tracking_codes_partnerId,
+        {{extract_nested_value("TRACKING_CODES","refersion","string")}} as tracking_codes_refersion,
+        {{extract_nested_value("TRACKING_CODES","utm_campaign","string")}} as tracking_codes_utm_campaign,
+        {{extract_nested_value("TRACKING_CODES","utm_medium","string")}} as tracking_codes_utm_medium,
+        {{extract_nested_value("TRACKING_CODES","utm_source","string")}} as tracking_codes_utm_source,
+        {{extract_nested_value("TRACKING_CODES","medium","string")}} as tracking_codes_medium,
+      	{{extract_nested_value("TRACKING_CODES","source","string")}} as tracking_codes_source,
+        {{extract_nested_value("TRACKING_CODES","utm_term","string")}} as tracking_codes_utm_term,
+        {{extract_nested_value("TRACKING_CODES","utm_content","string")}} as tracking_codes_utm_content,
+        {{extract_nested_value("TRACKING_CODES","affId","string")}} as tracking_codes_affId,
+        {{extract_nested_value("TRACKING_CODES","offerId","string")}} as tracking_codes_offerId,
+        {{extract_nested_value("TRACKING_CODES","fbc","string")}} as tracking_codes_fbc,
+        {{extract_nested_value("TRACKING_CODES","fbp","string")}} as tracking_codes_fbp,
+        {{extract_nested_value("TRACKING_CODES","heap_userId","string")}} as tracking_codes_heap_userId,
+        {{extract_nested_value("TRACKING_CODES","gclid","string")}} as tracking_codes_gclid,
+        {{extract_nested_value("TRACKING_CODES","fbuy_att_id","string")}} as tracking_codes_fbuy_att_id,
+        {{extract_nested_value("TRACKING_CODES","loqate_status","string")}} as tracking_codes_loqate_status,
+        {{extract_nested_value("TRACKING_CODES","referrer","string")}} as tracking_codes_referrer,
+        {{extract_nested_value("TRACKING_CODES","irClickId","string")}} as tracking_codes_irClickId,
+        {{extract_nested_value("TRACKING_CODES","page_name","string")}} as tracking_codes_page_name,
+        {{extract_nested_value("TRACKING_CODES","vwo_current","string")}} as tracking_codes_vwo_current,
+        {{extract_nested_value("TRACKING_CODES","vwo_cart","string")}} as tracking_codes_vwo_cart,
+        {{extract_nested_value("TRACKING_CODES","accountFormAcceptsSMSMarketing","boolean")}} as tracking_codes_accountFormAcceptsSMSMarketing,
         CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp()}}) as updated_at,		
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
@@ -197,7 +255,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        ROW_NUMBER() OVER (PARTITION BY a.id,a.order_number order by a.{{daton_batch_runtime()}} desc) row_num
+        
         from {{i}} a
             {% if var('currency_conversion_flag') %}
                 left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.presentment_currency = c.to_currency_code
@@ -205,12 +263,22 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             {{unnesting("discount_applications")}}
             {{unnesting("discount_codes")}}
             {{unnesting("line_items")}}
+            {{unnesting("billing_address")}}
+            {{unnesting("shipping_address")}}
+            {{unnesting("tracking_codes")}}
+            {{unnesting("total_shipping_price_set")}}
+            {{multi_unnesting("total_shipping_price_set","presentment_money")}}
+            {{multi_unnesting("total_shipping_price_set","shop_money")}}
+            {{unnesting("refunds")}}
+            
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             --WHERE 1=1
             {% endif %}
-        )
-    where row_num =1 
+            qualify
+            ROW_NUMBER() OVER (PARTITION BY a.id,a.order_number order by a.{{daton_batch_runtime()}} desc) =1
+        
+  
     {% if not loop.last %} union all {% endif %}
     {% endfor %}

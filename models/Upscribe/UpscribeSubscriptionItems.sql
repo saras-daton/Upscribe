@@ -53,8 +53,7 @@
             {% set hr = 0 %}
         {% endif %}
 
-        SELECT * {{exclude()}} (row_num)
-        FROM (
+        
             select 
             '{{brand}}' as brand,
             '{{store}}' as store,
@@ -71,53 +70,65 @@
             import_id,
             a.interval,
             {% if target.type =='snowflake' %}
-                ITEMS.VALUE:compare_at_price :: BOOLEAN as compare_at_price	,		
-                ITEMS.VALUE:fulfillment_service :: VARCHAR as fulfillment_service	,		
-                ITEMS.VALUE:gift_card :: BOOLEAN as item_gift_card	,		
-                ITEMS.VALUE:grams :: FLOAT as item_grams	,		
-                ITEMS.VALUE:id :: VARCHAR as id	,		
-                ITEMS.VALUE:image_url :: VARCHAR as image_url	,		
-                ITEMS.VALUE:in_stock :: BOOLEAN as in_stock	,		
-                ITEMS.VALUE:key	:: VARCHAR as key,		
-                ITEMS.VALUE:line_price :: FLOAT as line_price	,		
-                ITEMS.VALUE:original_line_price :: FLOAT as original_line_price	,		
-                ITEMS.VALUE:original_price :: FLOAT as original_price	,		
-                ITEMS.VALUE:price :: FLOAT as price	,		
-                ITEMS.VALUE:product_id :: INT as product_id	,	
-                ITEMS.VALUE:quantity :: FLOAT as quantity	,		
-                ITEMS.VALUE:requires_shipping :: BOOLEAN as requires_shipping	,		
+                ITEMS.VALUE:compare_at_price :: BOOLEAN as items_compare_at_price	,		
+                ITEMS.VALUE:fulfillment_service :: VARCHAR as items_fulfillment_service	,		
+                ITEMS.VALUE:gift_card :: BOOLEAN as items_gift_card	,		
+                ITEMS.VALUE:grams :: FLOAT as items_grams	,		
+                ITEMS.VALUE:id :: VARCHAR as items_id	,		
+                ITEMS.VALUE:image_url :: VARCHAR as items_image_url	,		
+                ITEMS.VALUE:in_stock :: BOOLEAN as items_in_stock	,		
+                ITEMS.VALUE:key	:: VARCHAR as items_key,		
+                ITEMS.VALUE:line_price :: FLOAT as items_line_price	,		
+                ITEMS.VALUE:original_line_price :: FLOAT as items_original_line_price	,		
+                ITEMS.VALUE:original_price :: FLOAT as items_original_price	,		
+                ITEMS.VALUE:price :: FLOAT as items_price	,		
+                ITEMS.VALUE:product_id :: INT as items_product_id	,	
+                ITEMS.VALUE:quantity :: FLOAT as items_quantity	,		
+                ITEMS.VALUE:requires_shipping :: BOOLEAN as items_requires_shipping	,		
                 ITEMS.VALUE:sku :: VARCHAR as items_sku	,		
-                ITEMS.VALUE:subscription_price :: FLOAT as subscription_price	,		
-                ITEMS.VALUE:taxable :: BOOLEAN as taxable	,		
-                ITEMS.VALUE:title :: VARCHAR as	title ,		
+                ITEMS.VALUE:subscription_price :: FLOAT as items_subscription_price	,		
+                ITEMS.VALUE:taxable :: BOOLEAN as items_taxable	,		
+                ITEMS.VALUE:title :: VARCHAR as	items_title ,		
                 ITEMS.VALUE:variant_id :: INT as items_variant_id	,		
-                ITEMS.VALUE:variant_title :: VARCHAR as variant_title	,		
-                ITEMS.VALUE:vendor :: VARCHAR as vendor	,
+                ITEMS.VALUE:variant_title :: VARCHAR as items_variant_title	,		
+                ITEMS.VALUE:vendor :: VARCHAR as items_vendor	,
             {% else %}
-                items.compare_at_price	,		
-                items.fulfillment_service	,		
-                items.gift_card	,		
-                items.grams	,		
-                items.id as id	,		
-                items.image_url	,		
-                items.in_stock	,		
-                items.key	,		
-                items.line_price	,		
-                items.original_line_price	,		
-                items.original_price	,		
-                items.price	,		
-                cast(items.product_id as string) as product_id,		
-                items.properties,
-                items.quantity	,		
-                items.requires_shipping	,		
+                items.compare_at_price	as items_compare_at_price,		
+                items.fulfillment_service as items_fulfillment_service	,		
+                items.gift_card as items_gift_card	,		
+                items.grams	items_grams,		
+                items.id as items_id	,		
+                items.image_url as items_image_url	,		
+                items.in_stock	items_in_stock,		
+                items.key as items_key	,		
+                items.line_price as items_line_price	,		
+                items.original_line_price	as items_original_line_price,		
+                items.original_price	items_original_price,		
+                items.price	 as items_price,		
+                cast(items.product_id as string) as items_product_id,		
+                --items.properties,
+                items.quantity as items_quantity	,		
+                items.requires_shipping	items_requires_shipping,		
                 items.sku as items_sku,	
-                items.subscription_price	,		
-                items.taxable	,		
-                items.title	,		
+                items.subscription_price items_subscription_price	,		
+                items.taxable	as items_taxable,		
+                items.title	as items_title,		
                 cast(items.variant_id as string) as items_variant_id,	
-                items.variant_title	,		
-                items.vendor	,	
+                items.variant_title	as items_variant_title,		
+                items.vendor	as items_vendor,	
             {% endif %}	
+            {{extract_nested_value("properties","Charge__Limit","string")}} as items_properties_Charge__Limit,
+
+            {{extract_nested_value("properties","Discount__Amount","string")}} as items_properties_Discount__Amount,
+
+            {{extract_nested_value("properties","Interval__Frequency","string")}} as items_properties_Interval__Frequency,
+
+            {{extract_nested_value("properties","Interval__Unit","string")}} as items_properties_Interval__Unit,
+
+            {{extract_nested_value("properties","Subscription","string")}} as items_properties_Subscription,
+
+            {{extract_nested_value("properties","Subscription__Product__Title","string")}} as items_properties_Subscription__Product__Title,
+           
             next,
             order_count,
             order_ids,
@@ -171,15 +182,17 @@
             {{daton_batch_id()}} as _daton_batch_id,
             current_timestamp() as _last_updated,
             '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-            DENSE_RANK() OVER (PARTITION BY date(a.created_at) order by {{daton_batch_runtime()}} desc) row_num
+            
             from {{i}} a
                 {{unnesting("ITEMS")}} 
                 {{unnesting("TRACKING_CODES")}} 
+                {{multi_unnesting("items","properties")}}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
-            ) 
-        where row_num = 1
+                qualify
+                DENSE_RANK() OVER (PARTITION BY date(a.created_at) order by {{daton_batch_runtime()}} desc) =1
+           
         {% if not loop.last %} union all {% endif %}
     {% endfor %}

@@ -52,8 +52,7 @@
             {% set hr = 0 %}
         {% endif %}
 
-        SELECT * {{exclude()}} (row_num)
-        FROM (
+        
             select 
             '{{brand}}' as Brand,
             '{{store}}' as store,
@@ -66,11 +65,11 @@
             a.charge_limit,
             a.coupon_discount,
             CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-            coalesce(CAST(a.id as string),'') as subscription_id,
+            coalesce(CAST(a.id as string),'NA') as subscription_id,
             import_id,
             a.interval,
-            items,
-            next,
+            --items,
+            --next,
             order_count,
             order_ids,
             a.original_total_line_items_price,
@@ -96,21 +95,23 @@
             a.total_line_items_price,
             a.total_price,
             a.total_tax,
-            tracking_codes,
+            --tracking_codes,
             updated_at,
             {{daton_user_id()}} as _daton_user_id,
             {{daton_batch_runtime()}} as _daton_batch_runtime,
             {{daton_batch_id()}} as _daton_batch_id,
             current_timestamp() as _last_updated,
             '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-            DENSE_RANK() OVER (PARTITION BY date(created_at) order by {{daton_batch_runtime()}} desc) row_num
+           
             from {{i}} a
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
-            )
-        where row_num = 1
+            qualify
+             DENSE_RANK() OVER (PARTITION BY date(created_at) order by {{daton_batch_runtime()}} desc) =1
+
+      
         {% if not loop.last %} union all {% endif %}
     {% endfor %}
 
