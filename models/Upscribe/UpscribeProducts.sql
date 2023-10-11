@@ -7,7 +7,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -59,7 +59,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{store}}' as store,
         body_html,		
         --collections,
-        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,			
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,			
         handle,		
         coalesce(a.id,0) as id ,
        
@@ -85,7 +85,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         store_id,		
         template_suffix,		
         a.title,		
-        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         {{extract_nested_value(" variants","admin_graphql_api_id","string")}} as variants_admin_graphql_api_id,
         {{extract_nested_value(" variants","barcode","string")}} as variants_barcode,
         {{extract_nested_value(" variants","compare_at_price","string")}} as variants_compare_at_price,
@@ -125,11 +125,11 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             {{unnesting("options")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
+            where {{daton_batch_runtime()}}  >= {{max_loaded}}
             --WHERE 1=1
             {% endif %}
             qualify
-            DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) =1
+            dense_rank() over (partition by a.id order by {{daton_batch_runtime()}} desc) =1
     
     {% if not loop.last %} union all {% endif %}
     {% endfor %}

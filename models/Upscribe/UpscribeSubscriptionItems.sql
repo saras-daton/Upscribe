@@ -7,7 +7,7 @@
 
     {% if is_incremental() %}
     {%- set max_loaded_query -%}
-    SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+    select coalesce(MAX(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     {% endset %}
 
     {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -65,7 +65,7 @@
             cancelled_on,
             a.charge_limit,
             a.coupon_discount,
-            CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
+            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
             coalesce(a.id,0) as subscription_id,
             import_id,
             a.interval,
@@ -154,10 +154,10 @@
                 {{multi_unnesting("items","properties")}}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
-                WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
+                where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
                 qualify
-                DENSE_RANK() OVER (PARTITION BY date(a.created_at) order by {{daton_batch_runtime()}} desc) =1
+                dense_rank() over (partition by date(a.created_at) order by {{daton_batch_runtime()}} desc) =1
            
         {% if not loop.last %} union all {% endif %}
     {% endfor %}

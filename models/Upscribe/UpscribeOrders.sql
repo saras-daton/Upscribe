@@ -11,7 +11,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -96,7 +96,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         contact_email,		
         create_subscription,	
         customer,	
-        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,		
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,		
         {{extract_nested_value(" discount_applications","allocation_method","string")}} as discount_applications_allocation_method,
         {{extract_nested_value(" discount_applications","code","string")}} as discount_applications_code,
         {{extract_nested_value(" discount_applications","target_selection","string")}} as discount_applications_target_selection,
@@ -242,7 +242,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("TRACKING_CODES","vwo_current","string")}} as tracking_codes_vwo_current,
         {{extract_nested_value("TRACKING_CODES","vwo_cart","string")}} as tracking_codes_vwo_cart,
         {{extract_nested_value("TRACKING_CODES","accountFormAcceptsSMSMarketing","boolean")}} as tracking_codes_accountFormAcceptsSMSMarketing,
-        CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp()}}) as updated_at,		
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp()}}) as updated_at,		
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
             case when c.from_currency_code is null then a.presentment_currency else c.from_currency_code end as exchange_currency_code,
@@ -273,11 +273,11 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
+            where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             --WHERE 1=1
             {% endif %}
             qualify
-            ROW_NUMBER() OVER (PARTITION BY a.id,a.order_number order by a.{{daton_batch_runtime()}} desc) =1
+            row_number() over (partition by a.id,a.order_number order by a.{{daton_batch_runtime()}} desc) =1
         
   
     {% if not loop.last %} union all {% endif %}
