@@ -16,6 +16,8 @@ vars:
   raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
     # Example Schema name
 
+
+
   currency_conversion_flag: True
   get_brandname_from_tablename_flag: True
   brandname_position_in_tablename: 0
@@ -47,6 +49,37 @@ vars:
     "edm-saras.EDM_Daton.Brand_US_Upscribe_BQ_SubscriptionQueues" : -7,
     "edm-saras.EDM_Daton.Brand_US_Upscribe_BQ_Products" : -7 
     }
+  upscribe_collection_ptrn: '%%upscribe%collections'
+  upscribe_collection_tbl_exclude_ptrn: ''
+  upscribe_collections_lookback: 2592000000
+
+  upscribe_customers_ptrn: '%upscribe%customers'
+  upscribe_customers_tbl_exclude_ptrn: ''
+  upscribe_customers_lookback: 2592000000
+
+  upscribe_orders_ptrn: '%upscribe%orders'
+  upscribe_orders_tbl_exclude_ptrn: ''
+  upscribe_orders_lookback: 2592000000
+
+  upscribe_products_ptrn: '%upscribe%products'
+  upscribe_products_tbl_exclude_ptrn: ''
+  upscribe_products_lookback: 2592000000
+
+  upscribe_refunds_ptrn: '%upscribe%refunds'
+  upscribe_refunds_tbl_exclude_ptrn: ''
+  upscribe_refunds_lookback: 2592000000
+
+  upscribe_subscription_ptrn: '%upscribe%subscriptions'
+  upscribe_subscription_tbl_exclude_ptrn: ''
+  upscribe_subscription_lookback: 2592000000
+
+  upscribe_subscription_queues_ptrn: '%upscribe%subscriptionqueues'
+  upscribe_subscription_queues_tbl_exclude_ptrn: ''
+  upscribe_subscription_queues_lookback: 2592000000
+
+
+
+
 
   
 # These configurations specify where dbt should look for different types of files.
