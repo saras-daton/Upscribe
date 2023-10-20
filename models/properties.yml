@@ -5,7 +5,7 @@ models:
     config:
         materialized : incremental
         incremental_strategy : merge
-        unique_key : ['subscription_id', 'items_sku','id']
+        unique_key : ['subscription_id', 'items_sku']
         partition_by : { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': day }
         granularity: 'day'
         cluster_by : ['subscription_id']

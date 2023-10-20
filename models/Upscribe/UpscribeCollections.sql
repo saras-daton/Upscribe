@@ -6,35 +6,6 @@
 {% endif %}
 
 
--- {% if is_incremental() %}
--- {%- set max_loaded_query -%}
--- SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
--- {% endset %}
-
--- {%- set max_loaded_results = run_query(max_loaded_query) -%}
-
--- {%- if execute -%}
--- {% set max_loaded = max_loaded_results.rows[0].values()[0] %}
--- {% else %}
--- {% set max_loaded = 0 %}
--- {%- endif -%}
--- {% endif %}
-
--- {% set table_name_query %}
--- {{set_table_name('%upscribe%collections')}}    
--- {% endset %}  
-
--- {% set results = run_query(table_name_query) %}
-
--- {% if execute %}
---     {# Return the first column #}
---     {% set results_list = results.columns[0].values() %}
---     {% set tables_lowercase_list = results.columns[1].values() %}
--- {% else %}
---     {% set results_list = [] %}
---     {% set tables_lowercase_list = [] %}
--- {% endif %}
-
 {% set relations = dbt_utils.get_relations_by_pattern(
 schema_pattern=var('raw_schema'),
 table_pattern=var('upscribe_collection_ptrn'),
@@ -77,14 +48,13 @@ database=var('raw_database')) %}
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
        
         from {{i}} a
             
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
               where a.{{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{ var('upscribe_collections_lookback') }},0) from {{ this }})
-            --WHERE 1=1
             {% endif %}
             qualify
             dense_rank() OVER (partition by id,store_id order by {{daton_batch_runtime()}} desc) =1

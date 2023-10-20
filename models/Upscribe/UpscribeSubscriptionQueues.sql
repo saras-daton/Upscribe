@@ -4,26 +4,7 @@
 {% else %}
     {{ config( enabled = False ) }}
 {% endif %}
-    
--- {% if is_incremental() %}
--- {%- set max_loaded_query -%}
--- select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
--- {% endset %}
 
--- {%- set max_loaded_results = run_query(max_loaded_query) -%}
-
--- {%- if execute -%}
--- {% set max_loaded = max_loaded_results.rows[0].values()[0] %}
--- {% else %}
--- {% set max_loaded = 0 %}
--- {%- endif -%}
--- {% endif %}
-
--- {% set table_name_query %}
--- {{set_table_name('%upscribe%subscriptionqueues')}}    
--- {% endset %}  
-
--- {% set results = run_query(table_name_query) %}
 
     {% set relations = dbt_utils.get_relations_by_pattern(
     schema_pattern=var('raw_schema'),
@@ -215,7 +196,7 @@
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         
         from {{i}} a  
             {{unnesting("items")}}
@@ -226,7 +207,6 @@
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{ var('upscribe_subscription_queues_lookback') }},0) from {{ this }})
-            --WHERE 1=1
             {% endif %}
             qualify
             row_number() over (partition by a.id,shopify_order_id order by a.{{daton_batch_runtime()}} desc) =1

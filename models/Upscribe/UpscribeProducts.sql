@@ -5,36 +5,6 @@
     {{ config( enabled = False ) }}
 {% endif %}
 
--- {% if is_incremental() %}
--- {%- set max_loaded_query -%}
--- select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
--- {% endset %}
-
--- {%- set max_loaded_results = run_query(max_loaded_query) -%}
-
--- {%- if execute -%}
--- {% set max_loaded = max_loaded_results.rows[0].values()[0] %}
--- {% else %}
--- {% set max_loaded = 0 %}
--- {%- endif -%}
--- {% endif %}
-
--- {% set table_name_query %}
--- {{set_table_name('%upscribe%products')}}    
--- {% endset %}  
-
--- {% set results = run_query(table_name_query) %}
-
--- {% if execute %}
---     {# Return the first column #}
---     {% set results_list = results.columns[0].values() %}
---     {% set tables_lowercase_list = results.columns[1].values() %}
--- {% else %}
---     {% set results_list = [] %}
---     {% set tables_lowercase_list = [] %}
--- {% endif %}
-
-
 
 {% set relations = dbt_utils.get_relations_by_pattern(
 schema_pattern=var('raw_schema'),
@@ -65,7 +35,6 @@ database=var('raw_database')) %}
         '{{brand}}' as brand,
         '{{store}}' as store,
         body_html,		
-        --collections,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,			
         handle,		
         coalesce(a.id,0) as id ,
@@ -80,10 +49,8 @@ database=var('raw_database')) %}
         {{extract_nested_value("image","src","string")}} as image_src,
         {{extract_nested_value("image","updated_at","TIMESTAMP")}} as image_updated_at,
         {{extract_nested_value("image","width","NUMERIC")}} as image_width,
-        --images,
         in_sales_channel,		
         is_subscription,		
-        --metafields,
         {{extract_nested_value(" options","id","NUMERIC")}} as options_id,
         {{extract_nested_value(" options","name","string")}} as options_name,
         {{extract_nested_value(" options","position","NUMERIC")}} as options_position,
@@ -124,7 +91,7 @@ database=var('raw_database')) %}
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         
         from {{i}} a 
             {{unnesting("image")}}
@@ -133,7 +100,6 @@ database=var('raw_database')) %}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
              where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{ var('upscribe_products_lookback') }},0) from {{ this }})
-            --WHERE 1=1
             {% endif %}
             qualify
             dense_rank() over (partition by a.id order by {{daton_batch_runtime()}} desc) =1

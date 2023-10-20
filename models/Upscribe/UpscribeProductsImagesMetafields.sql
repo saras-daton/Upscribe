@@ -5,25 +5,6 @@
     {{ config( enabled = False ) }}
 {% endif %}
 
--- {% if is_incremental() %}
--- {%- set max_loaded_query -%}
--- select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
--- {% endset %}
-
--- {%- set max_loaded_results = run_query(max_loaded_query) -%}
-
--- {%- if execute -%}
--- {% set max_loaded = max_loaded_results.rows[0].values()[0] %}
--- {% else %}
--- {% set max_loaded = 0 %}
--- {%- endif -%}
--- {% endif %}
-
--- {% set table_name_query %}
--- {{set_table_name('%upscribe%products')}}    
--- {% endset %}  
-
--- {% set results = run_query(table_name_query) %}
 {% set relations = dbt_utils.get_relations_by_pattern(
 schema_pattern=var('raw_schema'),
 table_pattern=var('upscribe_products_ptrn'),
@@ -69,11 +50,8 @@ database=var('raw_database')) %}
         CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,			
         a.handle,		
         coalesce(a.id,0) as id ,
-       
-        --image,
         in_sales_channel,		
         is_subscription,		
-        --options,
        
         {{extract_nested_value("images","admin_graphql_api_id","string")}} as images_admin_graphql_api_id,
         {{extract_nested_value("images","alt","boolean")}} as images_alt,
@@ -90,7 +68,6 @@ database=var('raw_database')) %}
         template_suffix,		
         a.title,		
         CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-        --variants,
         {{extract_nested_value("metafields","admin_graphql_api_id","string")}} as metafields_admin_graphql_api_id,
         {{extract_nested_value("metafields","created_at","TIMESTAMP")}} as metafields_created_at,
         {{extract_nested_value("metafields","description","boolean")}} as metafields_description,
@@ -107,7 +84,7 @@ database=var('raw_database')) %}
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         
         from {{i}} a 
             {{unnesting("images")}}
@@ -117,11 +94,9 @@ database=var('raw_database')) %}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
              where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{ var('upscribe_products_lookback') }},0) from {{ this }})
-            --WHERE 1=1
             {% endif %}
             qualify
             dense_rank() OVER (partition by a.id order by {{daton_batch_runtime()}} desc) =1
         
-    
     {% if not loop.last %} union all {% endif %}
     {% endfor %}

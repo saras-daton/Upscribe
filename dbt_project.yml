@@ -11,9 +11,9 @@ profile: 'edm_data_transformation'
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
-  raw_database: "edm-saras" #equivalent to project_id in BigQuery
+  raw_database: "EDM" #equivalent to project_id in BigQuery
     # Example Database name
-  raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
+  raw_schema: "EDM" #equivalent to dataset in BigQuery
     # Example Schema name
 
 
